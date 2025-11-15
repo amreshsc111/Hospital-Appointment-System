@@ -1,12 +1,21 @@
-﻿namespace HAS.Domain.Common;
+﻿using HAS.Domain.Common.Interfaces;
 
-public abstract class BaseEntity
+namespace HAS.Domain.Common;
+
+public abstract class BaseEntity : IAuditable, ISoftDeletable
 {
-    public Guid Id { get; protected set; } = Guid.NewGuid();
-    public DateTime CreatedAt { get; protected set; } = DateTime.Now;
-    public Guid CreatedById { get; protected set; }
-    public DateTime? ModifiedAt { get; protected set; }
-    public Guid? ModifiedById { get; protected set; }
+    public Guid Id { get; set; }
 
-    protected void TouchModified() => ModifiedAt = DateTime.Now;
+    // Auditing
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid? CreatedById { get; set; }
+
+    public DateTime? ModifiedAt { get; set; }
+    public Guid? ModifiedById { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+    public Guid? DeletedById { get; set; }
+
+    // Soft delete
+    public bool IsDeleted { get; set; } = false;
 }

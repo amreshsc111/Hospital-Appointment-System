@@ -25,8 +25,8 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
         });
 
         builder.HasOne<Department>()
-            .WithMany()
-            .HasForeignKey(d => d.DepartmentId)
-            .OnDelete(DeleteBehavior.Restrict);
+        .WithMany()
+        .HasForeignKey(d => d.DepartmentId)
+        .OnDelete(DeleteBehavior.Restrict);
     }
 }
