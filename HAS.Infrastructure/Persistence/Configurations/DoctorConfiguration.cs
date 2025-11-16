@@ -19,7 +19,7 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
             e.Property(x => x.Value).HasColumnName("Email").HasMaxLength(150);
         });
 
-        builder.OwnsOne(d => d.Phone, p =>
+        builder.OwnsOne(d => d.PhoneNumber, p =>
         {
             p.Property(x => x.Value).HasColumnName("Phone").HasMaxLength(20);
         });

@@ -19,7 +19,7 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
                 .IsRequired();
         });
 
-        builder.OwnsOne(p => p.Phone, pnum =>
+        builder.OwnsOne(p => p.PhoneNumber, pnum =>
         {
             pnum.Property(x => x.Value)
                 .HasColumnName("Phone")

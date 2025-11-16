@@ -1,3 +1,4 @@
+using HAS.API.Middleware;
 using HAS.Infrastructure;
 using HAS.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+
+app.UseGlobalExceptionHandler();
 
 app.UseHttpsRedirection();
 
