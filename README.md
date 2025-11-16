@@ -1,4 +1,4 @@
-# Hospital Appointment System
+# Hospital Appointment System (Work in progress...)
 
 Lightweight ASP.NET Core Web API for managing hospital appointments, authentication, and persistence. This repository contains the `HAS.API` project (ASP.NET Core 9, C# 13) and supporting infrastructure components.
 
@@ -27,8 +27,8 @@ Open API docs (when running in Development):
 
 Main settings live in `appsettings.json` and environment-specific files (for local dev use `appsettings.Development.json`). Key settings to provide:
 
-- Jwt:Secret — secret key used to sign JWT tokens (do NOT commit secrets)
-- ConnectionStrings:DefaultConnection — SQL Server connection string
+- Jwt:Secret â€” secret key used to sign JWT tokens (do NOT commit secrets)
+- ConnectionStrings:DefaultConnection â€” SQL Server connection string
 
 Example `appsettings.Development.json` (do not commit secrets):
 
