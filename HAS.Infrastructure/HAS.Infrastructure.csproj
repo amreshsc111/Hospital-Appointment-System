@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HAS.Application\HAS.Application.csproj" />
     <ProjectReference Include="..\HAS.Domain\HAS.Domain.csproj" />
   </ItemGroup>
 

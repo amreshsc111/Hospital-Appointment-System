@@ -1,7 +1,5 @@
-﻿using HAS.Domain.Common.Interfaces;
-using HAS.Infrastructure.Persistence.Context;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using HAS.Application.Common.Interfaces;
+using HAS.Application.User.Auth;
 
 namespace HAS.API.Endpoints;
 
@@ -9,45 +7,21 @@ public static class AuthLogin
 {
     public static IEndpointRouteBuilder MapAuthLogin(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/auth/login", async (
-            [FromBody] LoginRequest request,
-            ApplicationDbContext context,
-            IPasswordHasher hasher,
-            IJwtTokenService jwt,
-            IRefreshTokenService refreshTokenService
-        ) =>
-        { 
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserName == request.UserName);
-            if (user is null) return Results.Unauthorized();
-
-            if (!hasher.Verify(request.Password, user.PasswordHash))
-                return Results.Unauthorized();
-
-            // Generate JWT token
-            var jwtToken = jwt.GenerateToken(user);
-
-            // Generate Refresh Token
-            var refresh = await refreshTokenService.GenerateRefreshTokenAsync(user.Id);
-            await context.RefreshTokens.AddAsync(refresh);
-            await context.SaveChangesAsync();
-
-            return Results.Ok(new LoginResponse
+        app.MapPost("/auth/login", async (LoginCommand command, IMediator mediator) =>
+        {
+            try
             {
-                JwtToken = jwtToken,
-                RefreshToken = refresh.Token
-            });
+                var result = await mediator.Send(command);
+                return Results.Created($"/users/{result.UserId}", result);
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         })
         .WithTags("Auth")
         .AllowAnonymous();
 
         return app;
     }
-}
-
-public record LoginRequest(string UserName, string Password);
-
-public class LoginResponse
-{
-    public string? JwtToken { get; set; }
-    public object? RefreshToken { get; set; }
 }

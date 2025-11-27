@@ -3,16 +3,16 @@ using HAS.Application.User.Auth;
 
 namespace HAS.API.Endpoints;
 
-public static class RefreshToken
+public static class Register
 {
-    public static IEndpointRouteBuilder MapRefreshToken(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapRegister(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/auth/refresh", async (RefreshTokenCommand command, IMediator mediator) =>
+        app.MapPost("/auth/register", async (RegisterCommand command, IMediator mediator) =>
         {
             try
             {
                 var result = await mediator.Send(command);
-                return Results.Ok(result);
+                return Results.Created($"/users/{result.UserId}", result);
             }
             catch (Exception ex)
             {

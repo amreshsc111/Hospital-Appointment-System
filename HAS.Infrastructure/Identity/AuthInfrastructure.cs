@@ -9,14 +9,14 @@ public static class AuthInfrastructure
     //Register authentication services in DI
     public static IServiceCollection AddAuthInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Password hasher
+        // Password hasher (stateless, can be singleton)
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
 
-        // JWT token service
+        // JWT token service (stateless, can be singleton)
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
-        //Refresh token service
-        services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
+        // Refresh token service (depends on DbContext, must be scoped)
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         return services;
     }
