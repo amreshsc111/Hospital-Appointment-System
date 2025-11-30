@@ -18,6 +18,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    
+    // Enhancement entities
+    public DbSet<AppointmentHistory> AppointmentHistories => Set<AppointmentHistory>();
+    public DbSet<DoctorSchedule> DoctorSchedules => Set<DoctorSchedule>();
+    public DbSet<DoctorLeave> DoctorLeaves => Set<DoctorLeave>();
+    public DbSet<AppointmentReminder> AppointmentReminders => Set<AppointmentReminder>();
+    public DbSet<CancellationPolicy> CancellationPolicies => Set<CancellationPolicy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
