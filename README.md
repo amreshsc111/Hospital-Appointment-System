@@ -50,3 +50,83 @@ If you prefer, run migrations programmatically or from __Visual Studio__ Package
 - Create feature branches from `master`.
 - Run tests and ensure builds succeed before submitting PR.
 - Sensitive data should never be committed. Add secrets to `appsettings.Development.json` or use user-secrets.
+
+# HAS.API
+
+Minimal API project (ASP.NET Core .NET 9) for the HAS system.
+
+## Overview
+HAS.API is a minimal Web API using:
+- .NET 9
+- Minimal APIs
+- Entity Framework Core (SQL Server)
+- MediatR for request/command handling
+- JWT Authentication
+- Swagger / OpenAPI
+- Custom middleware (global exception handler)
+
+## Requirements
+- .NET 9 SDK
+- Visual Studio 2026 or VS Code
+- SQL Server instance accessible from `ConnectionStrings:DefaultConnection`
+
+## Quickstart
+
+1. Clone the repository:
+   - git clone <repository-url>
+
+2. Configure settings
+   - Update `appsettings.Development.json` (or `appsettings.json`) with:
+     - `ConnectionStrings:DefaultConnection`
+     - `Jwt:Secret`
+
+   Example:
+
+3. Restore and build:
+- `dotnet restore`
+- `dotnet build`
+
+4. Database migrations
+- Add or apply migrations from the project containing the `ApplicationDbContext`:
+  - `dotnet ef migrations add InitialCreate --project HAS.Infrastructure --startup-project HAS.API`
+  - `dotnet ef database update --project HAS.Infrastructure --startup-project HAS.API`
+
+5. Run
+- `dotnet run --project HAS.API`
+- Or debug via Visual Studio 2026.
+
+6. Explore API
+- Swagger (when `ASPNETCORE_ENVIRONMENT=Development`) at `https://localhost:<port>/swagger`.
+
+## Important implementation notes
+- `Program.cs` wires up services including `AddInfrastructureServices()`, JWT auth, EF Core DbContext, OpenAPI, and the endpoints:
+- `MapAuthLogin()`, `MapRegister()`, `MapRefreshToken()`
+- Minimal API endpoint parameters:
+- Parameters are inferred from route, query, body, or DI.
+- If an endpoint accepts `IMediator` (or other services), ensure the service is registered in DI (e.g., with MediatR) or mark the parameter with `[FromServices]`.
+
+## Common issue and fix
+- Exception:
+````````
+- Cause: An endpoint parameter (e.g., `mediator`) could not be resolved by DI because MediatR/`IMediator` was not registered or the parameter type is not a registered service.
+- Fixes:
+  - Register MediatR:
+    ```csharp
+    // Program.cs
+    builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Program).Assembly));
+    ```
+  - Or mark parameter explicitly:
+    ```csharp
+    app.MapPost("/login", async (LoginCommand command, [FromServices] IMediator mediator) => { ... });
+    ```
+
+## Troubleshooting
+- Verify `IMediator` is registered in DI.
+- Ensure the assembly containing handlers is included in MediatR registration.
+- Confirm connection string and DB migrations are applied.
+- Check `Jwt:Secret` is set for authentication endpoints.
+
+## Contributing
+- Follow repository branch and PR guidelines.
+- Run tests and linters before creating a PR.
+
