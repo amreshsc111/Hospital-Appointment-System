@@ -23,7 +23,4 @@ public class CancellationPolicyRepository(ApplicationDbContext dbContext) : ICan
         _dbContext.Set<CancellationPolicy>().Update(policy);
         return Task.CompletedTask;
     }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

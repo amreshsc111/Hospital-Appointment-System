@@ -36,7 +36,4 @@ public class AppointmentReminderRepository(ApplicationDbContext dbContext) : IAp
         _dbContext.Set<AppointmentReminder>().Update(reminder);
         return Task.CompletedTask;
     }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

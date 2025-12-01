@@ -6,22 +6,22 @@ namespace HAS.Application.Department.Commands;
 public record UpdateDepartmentCommand(Guid Id, string Name, string? Description) : IRequest<UpdateDepartmentResponse>;
 public record UpdateDepartmentResponse(Guid Id, string Name, string? Description);
 
-public class UpdateDepartmentHandler(IDepartmentRepository departments) 
+public class UpdateDepartmentHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<UpdateDepartmentCommand, UpdateDepartmentResponse>
 {
-    private readonly IDepartmentRepository _departments = departments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<UpdateDepartmentResponse> Handle(UpdateDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var department = await _departments.GetByIdAsync(request.Id, cancellationToken);
+        var department = await _unitOfWork.Departments.GetByIdAsync(request.Id, cancellationToken);
         if (department == null)
             throw new Exception($"Department with ID '{request.Id}' not found");
 
         department.Name = request.Name;
         department.Description = request.Description;
 
-        await _departments.UpdateAsync(department, cancellationToken);
-        await _departments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Departments.UpdateAsync(department, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UpdateDepartmentResponse(department.Id, department.Name, department.Description);
     }

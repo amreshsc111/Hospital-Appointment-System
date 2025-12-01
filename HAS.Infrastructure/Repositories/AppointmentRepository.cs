@@ -114,7 +114,4 @@ public class AppointmentRepository(ApplicationDbContext dbContext) : IAppointmen
             appointment.DeletedAt = DateTime.UtcNow;
         }
     }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

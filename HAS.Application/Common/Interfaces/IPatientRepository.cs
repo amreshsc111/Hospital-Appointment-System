@@ -12,5 +12,4 @@ public interface IPatientRepository
     Task UpdateAsync(Domain.Entities.Patient patient, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

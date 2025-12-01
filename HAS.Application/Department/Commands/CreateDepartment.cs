@@ -1,5 +1,6 @@
 using FluentValidation;
 using HAS.Application.Common.Interfaces;
+using HAS.Domain.Common.Interfaces;
 using HAS.Domain.Entities;
 
 namespace HAS.Application.Department.Commands;
@@ -7,14 +8,14 @@ namespace HAS.Application.Department.Commands;
 public record CreateDepartmentCommand(string Name, string? Description) : IRequest<CreateDepartmentResponse>;
 public record CreateDepartmentResponse(Guid Id, string Name, string? Description);
 
-public class CreateDepartmentHandler(IDepartmentRepository departments) 
+public class CreateDepartmentHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<CreateDepartmentCommand, CreateDepartmentResponse>
 {
-    private readonly IDepartmentRepository _departments = departments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CreateDepartmentResponse> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
-        if (await _departments.ExistsByNameAsync(request.Name, cancellationToken))
+        if (await _unitOfWork.Departments.ExistsByNameAsync(request.Name, cancellationToken))
             throw new Exception($"Department with name '{request.Name}' already exists");
 
         var department = new Domain.Entities.Department
@@ -24,8 +25,8 @@ public class CreateDepartmentHandler(IDepartmentRepository departments)
             Description = request.Description
         };
 
-        await _departments.AddAsync(department, cancellationToken);
-        await _departments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Departments.AddAsync(department, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateDepartmentResponse(department.Id, department.Name, department.Description);
     }

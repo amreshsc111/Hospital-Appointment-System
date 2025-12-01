@@ -16,18 +16,16 @@ public record RegisterCommand(
 ) : IRequest<RegisterResult>;
 public record RegisterResult(Guid UserId, string Token, string RefreshToken);
 
-public class RegisterHandler(IUserRepository userRepo, IRoleRepository roleRepo, IRefreshTokenRepository refreshRepo, IPasswordHasher hasher, IJwtTokenService jwt, IRefreshTokenService refreshService) : IRequestHandler<RegisterCommand, RegisterResult>
+public class RegisterHandler(IUnitOfWork unitOfWork, IPasswordHasher hasher, IJwtTokenService jwt, IRefreshTokenService refreshService) : IRequestHandler<RegisterCommand, RegisterResult>
 {
-    private readonly IUserRepository _userRepo = userRepo;
-    private readonly IRoleRepository _roleRepo = roleRepo;
-    private readonly IRefreshTokenRepository _refreshRepo = refreshRepo;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IPasswordHasher _hasher = hasher;
     private readonly IJwtTokenService _jwt = jwt;
     private readonly IRefreshTokenService _refreshService = refreshService;
 
     public async Task<RegisterResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
-        if (await _userRepo.AnyByUserNameOrEmailAsync(request.UserName, request.Email, cancellationToken))
+        if (await _unitOfWork.Users.AnyByUserNameOrEmailAsync(request.UserName, request.Email, cancellationToken))
             throw new Exception("User with same username or email already exists");
 
         var user = new UserEntity
@@ -41,23 +39,23 @@ public class RegisterHandler(IUserRepository userRepo, IRoleRepository roleRepo,
         // attach roles
         if (request.Roles != null && request.Roles.Any())
         {
-            var roles = await _roleRepo.GetRolesByNamesAsync(request.Roles, cancellationToken);
+            var roles = await _unitOfWork.Roles.GetRolesByNamesAsync(request.Roles, cancellationToken);
             foreach (var r in roles) user.Roles.Add(r);
         }
         else
         {
-            var userRole = await _roleRepo.GetRoleByNameAsync("User", cancellationToken) ?? new Role { Name = "User" };
+            var userRole = await _unitOfWork.Roles.GetRoleByNameAsync("User", cancellationToken) ?? new Role { Name = "User" };
             user.Roles.Add(userRole);
         }
 
-        await _userRepo.AddAsync(user, cancellationToken);
-        var refresh = await _refreshService.GenerateRefreshTokenAsync(user.Id);
-        await _refreshRepo.AddAsync(refresh, cancellationToken);
-        await _userRepo.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Users.AddAsync(user, cancellationToken);
+        var refreshToken = await _refreshService.GenerateRefreshTokenAsync(user.Id);
+        await _unitOfWork.RefreshTokens.AddAsync(refreshToken, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var token = _jwt.GenerateToken(user);
 
-        return new RegisterResult(user.Id, token, refresh.Token);
+        return new RegisterResult(user.Id, token, refreshToken.Token);
     }
 }
 

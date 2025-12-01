@@ -8,20 +8,18 @@ public record CancelAppointmentCommand(Guid Id, string? CancellationReason) : IR
 public record CancelAppointmentResponse(bool Success, string? Message, decimal CancellationFee);
 
 public class CancelAppointmentHandler(
-    IAppointmentRepository appointments,
+    IUnitOfWork unitOfWork,
     ICancellationPolicyService policyService,
-    IAppointmentHistoryRepository history,
     IEmailService emailService)
     : IRequestHandler<CancelAppointmentCommand, CancelAppointmentResponse>
 {
-    private readonly IAppointmentRepository _appointments = appointments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly ICancellationPolicyService _policyService = policyService;
-    private readonly IAppointmentHistoryRepository _history = history;
     private readonly IEmailService _emailService = emailService;
 
     public async Task<CancelAppointmentResponse> Handle(CancelAppointmentCommand request, CancellationToken cancellationToken)
     {
-        var appointment = await _appointments.GetByIdWithDetailsAsync(request.Id, cancellationToken);
+        var appointment = await _unitOfWork.Appointments.GetByIdWithDetailsAsync(request.Id, cancellationToken);
         if (appointment == null)
             throw new Exception($"Appointment with ID '{request.Id}' not found");
 
@@ -47,8 +45,8 @@ public class CancelAppointmentHandler(
                 : $"{appointment.Notes}\nCancelled: {request.CancellationReason}";
         }
 
-        await _appointments.UpdateAsync(appointment, cancellationToken);
-        await _appointments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Appointments.UpdateAsync(appointment, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Add history record
         var historyRecord = new AppointmentHistory
@@ -61,8 +59,8 @@ public class CancelAppointmentHandler(
             Notes = request.CancellationReason,
             ChangedByUserId = Guid.Empty // TODO: Get from current user service
         };
-        await _history.AddAsync(historyRecord, cancellationToken);
-        await _history.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.AppointmentHistories.AddAsync(historyRecord, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Send cancellation email
         try

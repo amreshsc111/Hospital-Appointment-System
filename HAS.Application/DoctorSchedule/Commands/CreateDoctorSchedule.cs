@@ -14,15 +14,14 @@ public record CreateDoctorScheduleCommand(
 
 public record CreateDoctorScheduleResponse(Guid Id, DayOfWeek DayOfWeek, TimeSpan StartTime, TimeSpan EndTime);
 
-public class CreateDoctorScheduleHandler(IDoctorScheduleRepository schedules, IDoctorRepository doctors)
+public class CreateDoctorScheduleHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<CreateDoctorScheduleCommand, CreateDoctorScheduleResponse>
 {
-    private readonly IDoctorScheduleRepository _schedules = schedules;
-    private readonly IDoctorRepository _doctors = doctors;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CreateDoctorScheduleResponse> Handle(CreateDoctorScheduleCommand request, CancellationToken cancellationToken)
     {
-        var doctor = await _doctors.GetByIdAsync(request.DoctorId, cancellationToken);
+        var doctor = await _unitOfWork.Doctors.GetByIdAsync(request.DoctorId, cancellationToken);
         if (doctor == null)
             throw new Exception($"Doctor with ID '{request.DoctorId}' not found");
 
@@ -37,8 +36,8 @@ public class CreateDoctorScheduleHandler(IDoctorScheduleRepository schedules, ID
             IsAvailable = true
         };
 
-        await _schedules.AddAsync(schedule, cancellationToken);
-        await _schedules.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.DoctorSchedules.AddAsync(schedule, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateDoctorScheduleResponse(schedule.Id, schedule.DayOfWeek, schedule.StartTime, schedule.EndTime);
     }

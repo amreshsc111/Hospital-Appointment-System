@@ -39,7 +39,4 @@ public class DoctorScheduleRepository(ApplicationDbContext dbContext) : IDoctorS
             schedule.DeletedAt = DateTime.UtcNow;
         }
     }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

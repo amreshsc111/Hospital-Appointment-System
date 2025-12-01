@@ -10,5 +10,4 @@ public interface IUserRepository
     Task<List<UserEntity>> GetAllAsync(CancellationToken cancellation);
     Task AddAsync(UserEntity user, CancellationToken cancellation);
     Task<bool> AnyByUserNameOrEmailAsync(string userName, string email, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

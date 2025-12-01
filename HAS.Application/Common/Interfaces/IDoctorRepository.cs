@@ -13,5 +13,4 @@ public interface IDoctorRepository
     Task UpdateAsync(Domain.Entities.Doctor doctor, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

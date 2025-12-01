@@ -5,14 +5,14 @@ namespace HAS.Application.Appointment.Commands;
 
 public record CompleteAppointmentCommand(Guid Id, string? CompletionNotes) : IRequest<bool>;
 
-public class CompleteAppointmentHandler(IAppointmentRepository appointments) 
+public class CompleteAppointmentHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<CompleteAppointmentCommand, bool>
 {
-    private readonly IAppointmentRepository _appointments = appointments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<bool> Handle(CompleteAppointmentCommand request, CancellationToken cancellationToken)
     {
-        var appointment = await _appointments.GetByIdAsync(request.Id, cancellationToken);
+        var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Id, cancellationToken);
         if (appointment == null)
             throw new Exception($"Appointment with ID '{request.Id}' not found");
 
@@ -27,8 +27,8 @@ public class CompleteAppointmentHandler(IAppointmentRepository appointments)
                 : $"{appointment.Notes}\nCompleted: {request.CompletionNotes}";
         }
 
-        await _appointments.UpdateAsync(appointment, cancellationToken);
-        await _appointments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Appointments.UpdateAsync(appointment, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }

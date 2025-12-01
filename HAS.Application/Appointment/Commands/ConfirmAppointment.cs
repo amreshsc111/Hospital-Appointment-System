@@ -7,18 +7,16 @@ namespace HAS.Application.Appointment.Commands;
 public record ConfirmAppointmentCommand(Guid Id) : IRequest<bool>;
 
 public class ConfirmAppointmentHandler(
-    IAppointmentRepository appointments,
-    IAppointmentHistoryRepository history,
+    IUnitOfWork unitOfWork,
     IEmailService emailService) 
     : IRequestHandler<ConfirmAppointmentCommand, bool>
 {
-    private readonly IAppointmentRepository _appointments = appointments;
-    private readonly IAppointmentHistoryRepository _history = history;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEmailService _emailService = emailService;
 
     public async Task<bool> Handle(ConfirmAppointmentCommand request, CancellationToken cancellationToken)
     {
-        var appointment = await _appointments.GetByIdWithDetailsAsync(request.Id, cancellationToken);
+        var appointment = await _unitOfWork.Appointments.GetByIdWithDetailsAsync(request.Id, cancellationToken);
         if (appointment == null)
             throw new Exception($"Appointment with ID '{request.Id}' not found");
 
@@ -28,8 +26,8 @@ public class ConfirmAppointmentHandler(
         var oldStatus = appointment.Status;
         appointment.Status = AppointmentStatus.Confirmed;
 
-        await _appointments.UpdateAsync(appointment, cancellationToken);
-        await _appointments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Appointments.UpdateAsync(appointment, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Add history record
         var historyRecord = new AppointmentHistory
@@ -41,8 +39,8 @@ public class ConfirmAppointmentHandler(
             Action = "Confirmed",
             ChangedByUserId = Guid.Empty
         };
-        await _history.AddAsync(historyRecord, cancellationToken);
-        await _history.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.AppointmentHistories.AddAsync(historyRecord, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Send confirmation email
         try

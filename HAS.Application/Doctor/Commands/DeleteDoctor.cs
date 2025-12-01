@@ -4,19 +4,19 @@ namespace HAS.Application.Doctor.Commands;
 
 public record DeleteDoctorCommand(Guid Id) : IRequest<bool>;
 
-public class DeleteDoctorHandler(IDoctorRepository doctors) 
+public class DeleteDoctorHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<DeleteDoctorCommand, bool>
 {
-    private readonly IDoctorRepository _doctors = doctors;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<bool> Handle(DeleteDoctorCommand request, CancellationToken cancellationToken)
     {
-        var doctor = await _doctors.GetByIdAsync(request.Id, cancellationToken);
+        var doctor = await _unitOfWork.Doctors.GetByIdAsync(request.Id, cancellationToken);
         if (doctor == null)
             throw new Exception($"Doctor with ID '{request.Id}' not found");
 
-        await _doctors.DeleteAsync(request.Id, cancellationToken);
-        await _doctors.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Doctors.DeleteAsync(request.Id, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }

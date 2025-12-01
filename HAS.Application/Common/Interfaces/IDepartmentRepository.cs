@@ -10,5 +10,4 @@ public interface IDepartmentRepository
     Task UpdateAsync(Domain.Entities.Department department, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

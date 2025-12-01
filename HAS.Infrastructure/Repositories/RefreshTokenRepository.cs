@@ -1,4 +1,4 @@
-﻿using HAS.Application.Common.Interfaces;
+using HAS.Application.Common.Interfaces;
 using HAS.Domain.Entities;
 using HAS.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +15,4 @@ public class RefreshTokenRepository : IRefreshTokenRepository
 
     public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct = default) =>
         _db.RefreshTokens.FirstOrDefaultAsync(t => t.Token == token, ct);
-
-    public Task SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
 }

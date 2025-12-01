@@ -17,5 +17,4 @@ public interface IAppointmentRepository
     Task AddAsync(Domain.Entities.Appointment appointment, CancellationToken cancellationToken);
     Task UpdateAsync(Domain.Entities.Appointment appointment, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

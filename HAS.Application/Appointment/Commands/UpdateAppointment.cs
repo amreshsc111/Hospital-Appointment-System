@@ -14,14 +14,14 @@ public record UpdateAppointmentCommand(
 
 public record UpdateAppointmentResponse(Guid Id, DateTime StartAt, DateTime EndAt, AppointmentStatus Status);
 
-public class UpdateAppointmentHandler(IAppointmentRepository appointments) 
+public class UpdateAppointmentHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<UpdateAppointmentCommand, UpdateAppointmentResponse>
 {
-    private readonly IAppointmentRepository _appointments = appointments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<UpdateAppointmentResponse> Handle(UpdateAppointmentCommand request, CancellationToken cancellationToken)
     {
-        var appointment = await _appointments.GetByIdAsync(request.Id, cancellationToken);
+        var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Id, cancellationToken);
         if (appointment == null)
             throw new Exception($"Appointment with ID '{request.Id}' not found");
 
@@ -32,7 +32,7 @@ public class UpdateAppointmentHandler(IAppointmentRepository appointments)
             throw new Exception($"Cannot update appointment with status '{appointment.Status}'");
 
         // Check for conflicts with the new time slot
-        var hasConflict = await _appointments.HasConflictAsync(
+        var hasConflict = await _unitOfWork.Appointments.HasConflictAsync(
             appointment.DoctorId,
             request.StartAt,
             request.EndAt,
@@ -48,8 +48,8 @@ public class UpdateAppointmentHandler(IAppointmentRepository appointments)
         appointment.Reason = request.Reason;
         appointment.Notes = request.Notes;
 
-        await _appointments.UpdateAsync(appointment, cancellationToken);
-        await _appointments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Appointments.UpdateAsync(appointment, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UpdateAppointmentResponse(appointment.Id, appointment.StartAt, appointment.EndAt, appointment.Status);
     }

@@ -17,15 +17,15 @@ public record CreatePatientCommand(
 
 public record CreatePatientResponse(Guid Id, string FullName, string Email);
 
-public class CreatePatientHandler(IPatientRepository patients) 
+public class CreatePatientHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<CreatePatientCommand, CreatePatientResponse>
 {
-    private readonly IPatientRepository _patients = patients;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CreatePatientResponse> Handle(CreatePatientCommand request, CancellationToken cancellationToken)
     {
         // Check for duplicate email
-        if (await _patients.ExistsByEmailAsync(request.Email, cancellationToken))
+        if (await _unitOfWork.Patients.ExistsByEmailAsync(request.Email, cancellationToken))
             throw new Exception($"Patient with email '{request.Email}' already exists");
 
         var patient = new Domain.Entities.Patient
@@ -39,8 +39,8 @@ public class CreatePatientHandler(IPatientRepository patients)
             PhoneNumber = new PhoneNumber(request.PhoneNumber)
         };
 
-        await _patients.AddAsync(patient, cancellationToken);
-        await _patients.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Patients.AddAsync(patient, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreatePatientResponse(patient.Id, patient.FullName, patient.Email.Value);
     }

@@ -16,21 +16,20 @@ public record CreateDoctorCommand(
 
 public record CreateDoctorResponse(Guid Id, string FullName, string Email);
 
-public class CreateDoctorHandler(IDoctorRepository doctors, IDepartmentRepository departments) 
+public class CreateDoctorHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<CreateDoctorCommand, CreateDoctorResponse>
 {
-    private readonly IDoctorRepository _doctors = doctors;
-    private readonly IDepartmentRepository _departments = departments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CreateDoctorResponse> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
         // Verify department exists
-        var department = await _departments.GetByIdAsync(request.DepartmentId, cancellationToken);
+        var department = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId, cancellationToken);
         if (department == null)
             throw new Exception($"Department with ID '{request.DepartmentId}' not found");
 
         // Check for duplicate email
-        if (await _doctors.ExistsByEmailAsync(request.Email, cancellationToken))
+        if (await _unitOfWork.Doctors.ExistsByEmailAsync(request.Email, cancellationToken))
             throw new Exception($"Doctor with email '{request.Email}' already exists");
 
         var doctor = new Domain.Entities.Doctor
@@ -44,8 +43,8 @@ public class CreateDoctorHandler(IDoctorRepository doctors, IDepartmentRepositor
             IsAvailable = request.IsAvailable
         };
 
-        await _doctors.AddAsync(doctor, cancellationToken);
-        await _doctors.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Doctors.AddAsync(doctor, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateDoctorResponse(doctor.Id, doctor.FullName, doctor.Email.Value);
     }

@@ -16,20 +16,19 @@ public record UpdateDoctorCommand(
 
 public record UpdateDoctorResponse(Guid Id, string FullName, string Email);
 
-public class UpdateDoctorHandler(IDoctorRepository doctors, IDepartmentRepository departments) 
+public class UpdateDoctorHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<UpdateDoctorCommand, UpdateDoctorResponse>
 {
-    private readonly IDoctorRepository _doctors = doctors;
-    private readonly IDepartmentRepository _departments = departments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<UpdateDoctorResponse> Handle(UpdateDoctorCommand request, CancellationToken cancellationToken)
     {
-        var doctor = await _doctors.GetByIdAsync(request.Id, cancellationToken);
+        var doctor = await _unitOfWork.Doctors.GetByIdAsync(request.Id, cancellationToken);
         if (doctor == null)
             throw new Exception($"Doctor with ID '{request.Id}' not found");
 
         // Verify department exists
-        var department = await _departments.GetByIdAsync(request.DepartmentId, cancellationToken);
+        var department = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId, cancellationToken);
         if (department == null)
             throw new Exception($"Department with ID '{request.DepartmentId}' not found");
 
@@ -40,8 +39,8 @@ public class UpdateDoctorHandler(IDoctorRepository doctors, IDepartmentRepositor
         doctor.PhoneNumber = new PhoneNumber(request.PhoneNumber);
         doctor.IsAvailable = request.IsAvailable;
 
-        await _doctors.UpdateAsync(doctor, cancellationToken);
-        await _doctors.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Doctors.UpdateAsync(doctor, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UpdateDoctorResponse(doctor.Id, doctor.FullName, doctor.Email.Value);
     }

@@ -14,20 +14,19 @@ public record CreateCancellationPolicyCommand(
 
 public record CreateCancellationPolicyResponse(Guid Id, int MinimumHours, decimal FeePercentage);
 
-public class CreateCancellationPolicyHandler(ICancellationPolicyRepository policies, IDoctorRepository doctors)
+public class CreateCancellationPolicyHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<CreateCancellationPolicyCommand, CreateCancellationPolicyResponse>
 {
-    private readonly ICancellationPolicyRepository _policies = policies;
-    private readonly IDoctorRepository _doctors = doctors;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CreateCancellationPolicyResponse> Handle(CreateCancellationPolicyCommand request, CancellationToken cancellationToken)
     {
-        var doctor = await _doctors.GetByIdAsync(request.DoctorId, cancellationToken);
+        var doctor = await _unitOfWork.Doctors.GetByIdAsync(request.DoctorId, cancellationToken);
         if (doctor == null)
             throw new Exception($"Doctor with ID '{request.DoctorId}' not found");
 
         // Check if policy already exists
-        var existing = await _policies.GetByDoctorIdAsync(request.DoctorId, cancellationToken);
+        var existing = await _unitOfWork.CancellationPolicies.GetByDoctorIdAsync(request.DoctorId, cancellationToken);
         if (existing != null)
             throw new Exception($"Cancellation policy already exists for this doctor");
 
@@ -41,8 +40,8 @@ public class CreateCancellationPolicyHandler(ICancellationPolicyRepository polic
             PolicyDescription = request.PolicyDescription
         };
 
-        await _policies.AddAsync(policy, cancellationToken);
-        await _policies.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.CancellationPolicies.AddAsync(policy, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateCancellationPolicyResponse(policy.Id, policy.MinimumHoursBeforeAppointment, policy.CancellationFeePercentage);
     }

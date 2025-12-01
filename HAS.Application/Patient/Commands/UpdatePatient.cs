@@ -17,14 +17,14 @@ public record UpdatePatientCommand(
 
 public record UpdatePatientResponse(Guid Id, string FullName, string Email);
 
-public class UpdatePatientHandler(IPatientRepository patients) 
+public class UpdatePatientHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<UpdatePatientCommand, UpdatePatientResponse>
 {
-    private readonly IPatientRepository _patients = patients;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<UpdatePatientResponse> Handle(UpdatePatientCommand request, CancellationToken cancellationToken)
     {
-        var patient = await _patients.GetByIdAsync(request.Id, cancellationToken);
+        var patient = await _unitOfWork.Patients.GetByIdAsync(request.Id, cancellationToken);
         if (patient == null)
             throw new Exception($"Patient with ID '{request.Id}' not found");
 
@@ -35,8 +35,8 @@ public class UpdatePatientHandler(IPatientRepository patients)
         patient.Email = new Email(request.Email);
         patient.PhoneNumber = new PhoneNumber(request.PhoneNumber);
 
-        await _patients.UpdateAsync(patient, cancellationToken);
-        await _patients.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Patients.UpdateAsync(patient, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new UpdatePatientResponse(patient.Id, patient.FullName, patient.Email.Value);
     }

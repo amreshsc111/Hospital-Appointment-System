@@ -15,22 +15,24 @@ public static class DependencyInjection
 
         // Register CurrentUserService for auditing purposes
         services.AddScoped<ICurrentUserService, CurrentUserService>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-        services.AddScoped<IRoleRepository, RoleRepository>();
         
-        // Register Hospital Management repositories
-        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-        services.AddScoped<IDoctorRepository, DoctorRepository>();
-        services.AddScoped<IPatientRepository, PatientRepository>();
-        services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-        
-        // Register Enhancement repositories
-        services.AddScoped<IAppointmentHistoryRepository, AppointmentHistoryRepository>();
-        services.AddScoped<IDoctorScheduleRepository, DoctorScheduleRepository>();
-        services.AddScoped<IDoctorLeaveRepository, DoctorLeaveRepository>();
-        services.AddScoped<IAppointmentReminderRepository, AppointmentReminderRepository>();
-        services.AddScoped<ICancellationPolicyRepository, CancellationPolicyRepository>();
+        // Register Unit of Work (replaces individual repository registrations)
+        // Register Unit of Work
+        services.AddScoped<IUnitOfWork, Persistence.UnitOfWork>();
+
+        // Register Repositories (Forward to UnitOfWork to ensure same instance/context)
+        services.AddScoped<IUserRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Users);
+        services.AddScoped<IRoleRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Roles);
+        services.AddScoped<IRefreshTokenRepository>(sp => sp.GetRequiredService<IUnitOfWork>().RefreshTokens);
+        services.AddScoped<IDepartmentRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Departments);
+        services.AddScoped<IDoctorRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Doctors);
+        services.AddScoped<IPatientRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Patients);
+        services.AddScoped<IAppointmentRepository>(sp => sp.GetRequiredService<IUnitOfWork>().Appointments);
+        services.AddScoped<IDoctorScheduleRepository>(sp => sp.GetRequiredService<IUnitOfWork>().DoctorSchedules);
+        services.AddScoped<IDoctorLeaveRepository>(sp => sp.GetRequiredService<IUnitOfWork>().DoctorLeaves);
+        services.AddScoped<IAppointmentHistoryRepository>(sp => sp.GetRequiredService<IUnitOfWork>().AppointmentHistories);
+        services.AddScoped<IAppointmentReminderRepository>(sp => sp.GetRequiredService<IUnitOfWork>().AppointmentReminders);
+        services.AddScoped<ICancellationPolicyRepository>(sp => sp.GetRequiredService<IUnitOfWork>().CancellationPolicies);
         
         // Register Services
         services.AddScoped<IEmailService, Services.EmailService>();

@@ -38,7 +38,4 @@ public class DoctorLeaveRepository(ApplicationDbContext dbContext) : IDoctorLeav
         _dbContext.Set<DoctorLeave>().Update(leave);
         return Task.CompletedTask;
     }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

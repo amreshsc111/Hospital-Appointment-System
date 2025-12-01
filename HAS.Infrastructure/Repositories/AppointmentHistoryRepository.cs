@@ -19,7 +19,4 @@ public class AppointmentHistoryRepository(ApplicationDbContext dbContext) : IApp
     {
         return _dbContext.Set<AppointmentHistory>().AddAsync(history, cancellationToken).AsTask();
     }
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

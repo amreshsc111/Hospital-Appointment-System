@@ -9,5 +9,4 @@ public interface IDoctorLeaveRepository
     Task<Domain.Entities.DoctorLeave?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task AddAsync(Domain.Entities.DoctorLeave leave, CancellationToken cancellationToken);
     Task UpdateAsync(Domain.Entities.DoctorLeave leave, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

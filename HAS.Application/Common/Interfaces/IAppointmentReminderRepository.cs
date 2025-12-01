@@ -8,5 +8,4 @@ public interface IAppointmentReminderRepository
     Task<AppointmentReminder?> GetByAppointmentIdAsync(Guid appointmentId, CancellationToken cancellationToken);
     Task AddAsync(AppointmentReminder reminder, CancellationToken cancellationToken);
     Task UpdateAsync(AppointmentReminder reminder, CancellationToken cancellationToken);
-    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

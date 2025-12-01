@@ -13,15 +13,14 @@ public record CreateDoctorLeaveCommand(
 
 public record CreateDoctorLeaveResponse(Guid Id, DateTime StartDate, DateTime EndDate, bool IsApproved);
 
-public class CreateDoctorLeaveHandler(IDoctorLeaveRepository leaves, IDoctorRepository doctors)
+public class CreateDoctorLeaveHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<CreateDoctorLeaveCommand, CreateDoctorLeaveResponse>
 {
-    private readonly IDoctorLeaveRepository _leaves = leaves;
-    private readonly IDoctorRepository _doctors = doctors;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<CreateDoctorLeaveResponse> Handle(CreateDoctorLeaveCommand request, CancellationToken cancellationToken)
     {
-        var doctor = await _doctors.GetByIdAsync(request.DoctorId, cancellationToken);
+        var doctor = await _unitOfWork.Doctors.GetByIdAsync(request.DoctorId, cancellationToken);
         if (doctor == null)
             throw new Exception($"Doctor with ID '{request.DoctorId}' not found");
 
@@ -35,8 +34,8 @@ public class CreateDoctorLeaveHandler(IDoctorLeaveRepository leaves, IDoctorRepo
             IsApproved = false
         };
 
-        await _leaves.AddAsync(leave, cancellationToken);
-        await _leaves.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.DoctorLeaves.AddAsync(leave, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new CreateDoctorLeaveResponse(leave.Id, leave.StartDate, leave.EndDate, leave.IsApproved);
     }

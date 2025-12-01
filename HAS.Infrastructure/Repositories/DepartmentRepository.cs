@@ -43,7 +43,4 @@ public class DepartmentRepository(ApplicationDbContext dbContext) : IDepartmentR
 
     public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken) =>
         _dbContext.Departments.AnyAsync(d => d.Name == name && !d.IsDeleted, cancellationToken);
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

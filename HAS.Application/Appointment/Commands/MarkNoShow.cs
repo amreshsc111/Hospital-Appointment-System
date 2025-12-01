@@ -5,14 +5,14 @@ namespace HAS.Application.Appointment.Commands;
 
 public record MarkNoShowCommand(Guid Id) : IRequest<bool>;
 
-public class MarkNoShowHandler(IAppointmentRepository appointments) 
+public class MarkNoShowHandler(IUnitOfWork unitOfWork) 
     : IRequestHandler<MarkNoShowCommand, bool>
 {
-    private readonly IAppointmentRepository _appointments = appointments;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<bool> Handle(MarkNoShowCommand request, CancellationToken cancellationToken)
     {
-        var appointment = await _appointments.GetByIdAsync(request.Id, cancellationToken);
+        var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Id, cancellationToken);
         if (appointment == null)
             throw new Exception($"Appointment with ID '{request.Id}' not found");
 
@@ -21,8 +21,8 @@ public class MarkNoShowHandler(IAppointmentRepository appointments)
 
         appointment.Status = AppointmentStatus.NoShow;
 
-        await _appointments.UpdateAsync(appointment, cancellationToken);
-        await _appointments.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Appointments.UpdateAsync(appointment, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return true;
     }

@@ -59,7 +59,4 @@ public class DoctorRepository(ApplicationDbContext dbContext) : IDoctorRepositor
 
     public Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken) =>
         _dbContext.Doctors.AnyAsync(d => d.Email.Value == email && !d.IsDeleted, cancellationToken);
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken) =>
-        _dbContext.SaveChangesAsync(cancellationToken);
 }

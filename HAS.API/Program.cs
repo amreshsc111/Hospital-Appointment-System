@@ -35,16 +35,23 @@ builder.Services.AddJwtAuthentication(jwtSecret!);
 // Add authorization services
 builder.Services.AddAuthorizationPolicies();
 
-// Hangfire Configuration (Client only)
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter your JWT token in the format: Bearer {your token}"
+    });
+
+    // Apply security requirement per-endpoint based on .RequireAuthorization() or .AllowAnonymous()
+    options.OperationFilter<HAS.API.Filters.SecurityRequirementsOperationFilter>();
+});
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
