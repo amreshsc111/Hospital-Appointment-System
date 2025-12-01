@@ -1,4 +1,4 @@
-# Hospital Appointment System (Work in progress...)
+# Hospital Appointment System
 
 Lightweight ASP.NET Core Web API for managing hospital appointments, authentication, and persistence. This repository contains the `HAS.API` project (ASP.NET Core 9, C# 13) and supporting infrastructure components.
 
