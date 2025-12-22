@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 namespace HAS.Job.Jobs;
 
 public class ReminderBackgroundJob(
-    IAppointmentReminderRepository reminders,
+    IUnitOfWork unitOfWork,
     IEmailService emailService,
     ILogger<ReminderBackgroundJob> logger)
 {
-    private readonly IAppointmentReminderRepository _reminders = reminders;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEmailService _emailService = emailService;
     private readonly ILogger<ReminderBackgroundJob> _logger = logger;
 
@@ -20,7 +20,7 @@ public class ReminderBackgroundJob(
         try
         {
             // Get pending reminders scheduled for now or in the past
-            var pendingReminders = await _reminders.GetPendingRemindersAsync(DateTime.UtcNow, CancellationToken.None);
+            var pendingReminders = await _unitOfWork.AppointmentReminders.GetPendingRemindersAsync(DateTime.UtcNow, CancellationToken.None);
             
             _logger.LogInformation($"Found {pendingReminders.Count} pending reminders.");
 
@@ -40,7 +40,7 @@ public class ReminderBackgroundJob(
                     reminder.Status = ReminderStatus.Sent;
                     reminder.SentAt = DateTime.UtcNow;
                     
-                    await _reminders.UpdateAsync(reminder, CancellationToken.None);
+                    await _unitOfWork.AppointmentReminders.UpdateAsync(reminder, CancellationToken.None);
                 }
                 catch (Exception ex)
                 {
@@ -53,11 +53,11 @@ public class ReminderBackgroundJob(
                         reminder.ErrorMessage = ex.Message;
                     }
                     
-                    await _reminders.UpdateAsync(reminder, CancellationToken.None);
+                    await _unitOfWork.AppointmentReminders.UpdateAsync(reminder, CancellationToken.None);
                 }
             }
 
-            await _reminders.SaveChangesAsync(CancellationToken.None);
+            await _unitOfWork.SaveChangesAsync(CancellationToken.None);
             
             _logger.LogInformation("Reminder background job completed.");
         }

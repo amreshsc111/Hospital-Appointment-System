@@ -1,10 +1,12 @@
 using HAS.Domain.Common;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HAS.Domain.Entities;
 
 public class CancellationPolicy : BaseEntity
 {
     public Guid DoctorId { get; set; }
+    [ForeignKey(nameof(DoctorId))]
     public Doctor Doctor { get; set; } = default!;
     
     public int MinimumHoursBeforeAppointment { get; set; } = 24;

@@ -24,9 +24,9 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
             p.Property(x => x.Value).HasColumnName("Phone").HasMaxLength(20);
         });
 
-        builder.HasOne<Department>()
-        .WithMany()
-        .HasForeignKey(d => d.DepartmentId)
-        .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(d => d.Department)
+            .WithMany(dept => dept.Doctors)
+            .HasForeignKey(d => d.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

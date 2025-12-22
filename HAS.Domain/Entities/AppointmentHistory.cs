@@ -1,11 +1,13 @@
 using HAS.Domain.Common;
 using HAS.Domain.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HAS.Domain.Entities;
 
 public class AppointmentHistory : BaseEntity
 {
     public Guid AppointmentId { get; set; }
+    [ForeignKey(nameof(AppointmentId))]
     public Appointment Appointment { get; set; } = default!;
     
     public AppointmentStatus OldStatus { get; set; }

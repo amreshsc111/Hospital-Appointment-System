@@ -1,5 +1,6 @@
 ﻿using HAS.Domain.Common;
 using HAS.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HAS.Domain.Entities;
 
@@ -9,6 +10,7 @@ public class Doctor : BaseEntity
     public string Qualification { get; set; } = default!;
     
     public Guid DepartmentId { get; set; }
+    [ForeignKey(nameof(DepartmentId))]
     public Department Department { get; set; } = default!;
     
     public Email Email { get; set; } = default!;

@@ -15,13 +15,13 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
         builder.Property(a => a.Status).HasConversion<int>();
         builder.Property(a => a.Notes).HasMaxLength(500);
 
-        builder.HasOne<Patient>()
-            .WithMany()
+        builder.HasOne(a => a.Patient)
+            .WithMany(p => p.Appointments)
             .HasForeignKey(a => a.PatientId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Doctor>()
-            .WithMany()
+        builder.HasOne(a => a.Doctor)
+            .WithMany(d => d.Appointments)
             .HasForeignKey(a => a.DoctorId)
             .OnDelete(DeleteBehavior.Restrict);
     }
